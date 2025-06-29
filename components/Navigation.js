@@ -6,7 +6,7 @@ const Navigation = () => {
       <ul>
         <li>
           <Link href="/">
-            All Flashcards
+            All Flashcards - Verified
           </Link>
         </li>
         <li>
