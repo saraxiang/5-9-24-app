@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 
@@ -9,6 +9,21 @@ const CreatePage = () => {
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [saved, setSaved] = useState(false);
+
+  const formRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (formRef.current) {
+          formRef.current.requestSubmit();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -40,7 +55,7 @@ const CreatePage = () => {
           <p className="mt-2 text-slate-500">Fill in the front and back of your new card</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-md border border-slate-200 p-8 space-y-6">
+        <form ref={formRef} onSubmit={handleSubmit} className="bg-white rounded-xl shadow-md border border-slate-200 p-8 space-y-6">
           <div>
             <label htmlFor="front" className="block text-sm font-semibold text-slate-700 mb-2">
               Front
@@ -79,6 +94,10 @@ const CreatePage = () => {
           >
             Save Flashcard
           </button>
+
+          <p className="text-center text-xs text-slate-400">
+            Press <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-500 font-mono text-xs">⌘</kbd> + <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-500 font-mono text-xs">Enter</kbd> to save
+          </p>
 
           {saved && (
             <div className="text-center py-2 px-4 bg-green-50 border border-green-200 rounded-lg">
