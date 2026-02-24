@@ -1,18 +1,35 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 
+const STORAGE_KEY = 'flashcards';
+
 const CreatePage = () => {
+  const router = useRouter();
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [saved, setSaved] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({ front, back });
+
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const cards = stored ? JSON.parse(stored) : [];
+    const newCard = {
+      id: Date.now(),
+      front,
+      back,
+    };
+    const updated = [...cards, newCard];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
     setFront('');
     setBack('');
     setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setTimeout(() => {
+      setSaved(false);
+      router.push('/');
+    }, 1000);
   };
 
   return (

@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
+
+const STORAGE_KEY = 'flashcards';
+
+const DEFAULT_CARDS = [
+  { id: 1, front: 'test1', back: 'test2' },
+  { id: 2, front: 'test3', back: 'test4' },
+  { id: 3, front: 'test5', back: 'test6' }
+];
 
 const FlashCard = ({ front, back }) => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -26,11 +34,17 @@ const FlashCard = ({ front, back }) => {
 };
 
 const IndexPage = () => {
-  const flashcards = [
-    { id: 1, front: 'test1', back: 'test2' },
-    { id: 2, front: 'test3', back: 'test4' },
-    { id: 3, front: 'test5', back: 'test6' }
-  ];
+  const [flashcards, setFlashcards] = useState([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      setFlashcards(JSON.parse(stored));
+    } else {
+      setFlashcards(DEFAULT_CARDS);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CARDS));
+    }
+  }, []);
 
   return (
     <Layout>
