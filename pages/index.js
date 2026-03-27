@@ -9,6 +9,16 @@ const DEFAULT_CARDS = [
   { id: 3, front: 'test5', back: 'test6' }
 ];
 
+const safeParse = (json) => {
+  try {
+    const parsed = JSON.parse(json);
+    if (Array.isArray(parsed)) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 const FlashCard = ({ front, back }) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -38,8 +48,9 @@ const IndexPage = () => {
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      setFlashcards(JSON.parse(stored));
+    const cards = safeParse(stored);
+    if (cards) {
+      setFlashcards(cards);
     } else {
       setFlashcards(DEFAULT_CARDS);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CARDS));
