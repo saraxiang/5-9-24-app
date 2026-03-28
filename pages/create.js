@@ -11,6 +11,7 @@ const CreatePage = () => {
   const [saved, setSaved] = useState(false);
 
   const formRef = useRef(null);
+  const redirectTimerRef = useRef(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -22,11 +23,20 @@ const CreatePage = () => {
       }
     };
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+    }
 
     const stored = localStorage.getItem(STORAGE_KEY);
     const cards = stored ? JSON.parse(stored) : [];
@@ -41,7 +51,7 @@ const CreatePage = () => {
     setFront('');
     setBack('');
     setSaved(true);
-    setTimeout(() => {
+    redirectTimerRef.current = setTimeout(() => {
       setSaved(false);
       router.push('/');
     }, 1000);
