@@ -4,6 +4,16 @@ import Layout from '../components/Layout';
 
 const STORAGE_KEY = 'flashcards';
 
+const safeParseCards = (json) => {
+  try {
+    const parsed = JSON.parse(json);
+    if (Array.isArray(parsed)) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 const CreatePage = () => {
   const router = useRouter();
   const [front, setFront] = useState('');
@@ -11,6 +21,7 @@ const CreatePage = () => {
   const [saved, setSaved] = useState(false);
 
   const formRef = useRef(null);
+  const redirectTimerRef = useRef(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -22,14 +33,23 @@ const CreatePage = () => {
       }
     };
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+    }
+
     const stored = localStorage.getItem(STORAGE_KEY);
-    const cards = stored ? JSON.parse(stored) : [];
+    const cards = safeParseCards(stored) || [];
     const newCard = {
       id: Date.now(),
       front,
@@ -41,7 +61,7 @@ const CreatePage = () => {
     setFront('');
     setBack('');
     setSaved(true);
-    setTimeout(() => {
+    redirectTimerRef.current = setTimeout(() => {
       setSaved(false);
       router.push('/');
     }, 1000);
@@ -96,7 +116,7 @@ const CreatePage = () => {
           </button>
 
           <p className="text-center text-xs text-slate-400">
-            Press <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-500 font-mono text-xs">⌘</kbd> + <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-500 font-mono text-xs">Enter</kbd> to save
+            Press <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-500 font-mono text-xs">Ctrl</kbd>/<kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-500 font-mono text-xs">⌘</kbd> + <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-500 font-mono text-xs">Enter</kbd> to save
           </p>
 
           {saved && (
