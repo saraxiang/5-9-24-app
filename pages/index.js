@@ -39,7 +39,18 @@ const IndexPage = () => {
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      setFlashcards(JSON.parse(stored));
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setFlashcards(parsed);
+        } else {
+          setFlashcards(DEFAULT_CARDS);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CARDS));
+        }
+      } catch {
+        setFlashcards(DEFAULT_CARDS);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CARDS));
+      }
     } else {
       setFlashcards(DEFAULT_CARDS);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CARDS));

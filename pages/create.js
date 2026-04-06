@@ -3,12 +3,14 @@ import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 
 const STORAGE_KEY = 'flashcards';
+const MAX_FIELD_LENGTH = 1000;
 
 const CreatePage = () => {
   const router = useRouter();
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
 
   const formRef = useRef(null);
 
@@ -27,13 +29,36 @@ const CreatePage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError('');
 
+    const trimmedFront = front.trim();
+    const trimmedBack = back.trim();
+
+    if (!trimmedFront || !trimmedBack) {
+      setError('Both front and back fields are required.');
+      return;
+    }
+
+    if (trimmedFront.length > MAX_FIELD_LENGTH || trimmedBack.length > MAX_FIELD_LENGTH) {
+      setError(`Each field must be ${MAX_FIELD_LENGTH} characters or fewer.`);
+      return;
+    }
+
+    let cards = [];
     const stored = localStorage.getItem(STORAGE_KEY);
-    const cards = stored ? JSON.parse(stored) : [];
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        cards = Array.isArray(parsed) ? parsed : [];
+      } catch {
+        cards = [];
+      }
+    }
+
     const newCard = {
       id: Date.now(),
-      front,
-      back,
+      front: trimmedFront,
+      back: trimmedBack,
     };
     const updated = [...cards, newCard];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -67,6 +92,7 @@ const CreatePage = () => {
               value={front}
               onChange={(e) => setFront(e.target.value)}
               required
+              maxLength={MAX_FIELD_LENGTH}
               placeholder="Enter the question or prompt..."
               className="w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
             />
@@ -83,6 +109,7 @@ const CreatePage = () => {
               value={back}
               onChange={(e) => setBack(e.target.value)}
               required
+              maxLength={MAX_FIELD_LENGTH}
               placeholder="Enter the answer..."
               className="w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
             />
@@ -98,6 +125,12 @@ const CreatePage = () => {
           <p className="text-center text-xs text-slate-400">
             Press <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-500 font-mono text-xs">⌘</kbd> + <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-500 font-mono text-xs">Enter</kbd> to save
           </p>
+
+          {error && (
+            <div className="text-center py-2 px-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm font-medium">{error}</p>
+            </div>
+          )}
 
           {saved && (
             <div className="text-center py-2 px-4 bg-green-50 border border-green-200 rounded-lg">
